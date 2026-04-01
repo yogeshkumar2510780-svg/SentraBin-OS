@@ -83,78 +83,87 @@ int generateBinID(int waste_type, int zone) {
 
     return binID;
 }
-
-//int computeWPI() TO BE IMPLEMENTED
-/* Create Bin Module */
-void createBin() {
-    int n;
-    printf("\nEnter the Number of Bins to be Created :");
-    scanf("%d",&n);
-
-    FILE *fp = fopen(BINS_CSV, "a");
-    if (!fp) {
-        printf("Error Loading Database! \n");
-        return ;
+int computeWPI(float fill, int wasteType) {
+    int typefactor;
+    switch(wasteType) {
+        case DRY:typefactor = 20; break;
+        case WET: typefactor =40; break;
+        case MIXED: typefactor = 50; break;
+        case HAZARDOUS: typefactor = 80; break;
+        default: typefactor = 20;
     }
-    for (int i = 0; i < n; i++) {
-        // Zone
-        printf("\nEnter the Details for Bin %d", i+1);
-        printf("\nEnter the Bin Zone: ");
-        scanf("%d",&bins[i].zone);
-        if (bins[i].zone < 1 || bins[i].zone > MAX_ZONE) {
-            printf("Invalid Bin Zone! \n");
-            i--;
-            continue;
-        }
-        //Waste Type
-        printf("\nSelect the Waste Type: ");
-        printf("\n1. DRY WASTE");
-        printf("\n2. WET WASTE");
-        printf("\n3. MIXED");
-        printf("\n4. HAZARDOUS WASTE");
-        printf("\n option Selected :");
-        scanf("%d",&bins[i].waste_type);
-        if (bins[i].waste_type < 1 || bins[i].waste_type > 4) {
-            printf("Invalid Waste Type! \n");
-            i--;
-            continue;
-        }
-        //Capacity
-        printf("Enter the Capacity (in kgs): ");
-        scanf("%f",&bins[i].capacity);
-        if (bins[i].capacity <= 0) {
-            printf("Capacity cannot be less than or equal to 0");
-            i--;
-            continue;
-        }
-        //Fill Level
-        printf("\nEnter the Fill Level (in %%): ");
-        scanf("%f",&bins[i].fill_level);
-        if (bins[i].fill_level < 0 || bins[i].fill_level > 100) {
-            printf("\nInvalid Input");
-            i--;
-            continue;
-        }
-        // Bin Location Co ordinates(x,y)
-        printf("\nEnter the Location Co-ordinates of Bin (x, y): ")
-        scanf("%d %d",&bins[i].x, &bins[i].y);
-
-        //Generate Bin ID
-        int id = generateBinID(bins[i].waste_type,bins[i].zone);
-        if (bins[i].bin_id < 0) {
-            i--;
-            continue;
-        }
-        // Initial Flags
-        bins[i].bin_id  = id;
-        bins[i].collected_today = false;
-        //To Compute the WPI
-        bins[i].wpi = computeWpi();//to be implemented
-
-
-
-
-    }
-
-
+    int wpi = (0.4*typefactor) + (0.6*fill);
+    return wpi;
 }
+    //int computeWPI() TO BE IMPLEMENTED
+    /* Create Bin Module */
+    void createBin(){
+        int n;
+        printf("\nEnter the Number of Bins to be Created :");
+        scanf("%d",&n);
+
+        FILE *fp = fopen(BINS_CSV, "a");
+        if (!fp) {
+            printf("Error Loading Database! \n");
+            return ;
+        }
+        for (int i = 0; i < n; i++) {
+            // Zone
+            printf("\nEnter the Details for Bin %d", i+1);
+            printf("\nEnter the Bin Zone: ");
+            scanf("%d",&bins[i].zone);
+            if (bins[i].zone < 1 || bins[i].zone > MAX_ZONE) {
+                printf("Invalid Bin Zone! \n");
+                i--;
+                continue;
+            }
+            //Waste Type
+            printf("\nSelect the Waste Type: ");
+            printf("\n1. DRY WASTE");
+            printf("\n2. WET WASTE");
+            printf("\n3. MIXED");
+            printf("\n4. HAZARDOUS WASTE");
+            printf("\n option Selected :");
+            scanf("%d",&bins[i].waste_type);
+            if (bins[i].waste_type < 1 || bins[i].waste_type > 4) {
+                printf("Invalid Waste Type! \n");
+                i--;
+                continue;
+            }
+            //Capacity
+            printf("Enter the Capacity (in kgs): ");
+            scanf("%f",&bins[i].capacity);
+            if (bins[i].capacity <= 0) {
+                printf("Capacity cannot be less than or equal to 0");
+                i--;
+                continue;
+            }
+            //Fill Level
+            printf("\nEnter the Fill Level (in %%): ");
+            scanf("%f",&bins[i].fill_level);
+            if (bins[i].fill_level < 0 || bins[i].fill_level > 100) {
+                printf("\nInvalid Input");
+                i--;
+                continue;
+            }
+            // Bin Location Co ordinates(x,y)
+            printf("\nEnter the Location Co-ordinates of Bin (x, y): ");
+            scanf("%d %d",&bins[i].x, &bins[i].y);
+
+            //Generate Bin ID
+            int id = generateBinID(bins[i].waste_type,bins[i].zone);
+            if (bins[i].bin_id < 0) {
+                i--;
+                continue;
+            }
+            // Initial Flags
+            bins[i].bin_id  = id;
+            bins[i].collected_today = false;
+            //To Compute the WPI
+            bins[i].wpi = computeWPI(bins[i].fill_level, bins[i].waste_type);//to be implemented
+
+
+
+
+        }
+    }
