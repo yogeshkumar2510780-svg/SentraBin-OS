@@ -19,7 +19,7 @@
 
 // Bin Structure
 typedef struct {
-    int bin_id; // bin id
+    long long int bin_id; // bin id
     int zone;   // zone
     int waste_type;     // waste type
     float fill_level;   // fill_level (in percentage out of 100)
@@ -43,25 +43,31 @@ const char* getWasteTypeString(int type) {
     }
 }
 
-int generateBinID(int waste_type, int zone) {
+long long int generateBinID(int waste_type, int zone) {
     FILE *fp = fopen(BINS_CSV, "r");
 
-    int id, z, priority;
-    char wasteTypeStr[20];
+    long long int id;
+    int z, collected, x, y;
+    char wasteTypeStr[50];
     float fill, cap, wpi;
 
     int maxSerial = 0;
-
+    if (fp == NULL) {
+        return (long long)waste_type * 100000 + zone * 1000 + 1;
+    }
     if (fp != NULL) {
         char line[200];
         fgets(line, sizeof(line), fp); // skip header
 
-        while (fscanf(fp, "%d,%d,%[^,],%f,%f,%f,%d\n",
-                      &id, &z, wasteTypeStr,
-                      &fill, &cap, &wpi, &priority) == 7) {
-
+        while (fscanf(fp, "%lld,%d,%[^,],%f,%f,%d,%d,%f,%d",
+       &id, &z, wasteTypeStr,
+       &cap, &fill,
+       &x, &y,
+       &wpi, &collected) == 9) {
+            int currentWasteType = id/100000;
+            int currentZone = (id/1000) % 1000;
             // Check same zone
-            if (z == zone) {
+            if (currentZone == zone && currentWasteType == waste_type) {
                 int serial = id % 1000; // last 3 digits
                 if (serial > maxSerial)
                     maxSerial = serial;
@@ -79,7 +85,7 @@ int generateBinID(int waste_type, int zone) {
     }
 
     // Construct ID
-    int binID = (waste_type * 100000) + (zone * 1000) + newSerial;
+    long long int binID = (long long)(waste_type * 100000) + (long long)(zone * 1000) + newSerial;
 
     return binID;
 }
@@ -93,9 +99,9 @@ int computeWPI(float fill, int wasteType) {
         default: typefactor = 20;
     }
     int wpi = (0.4*typefactor) + (0.6*fill);
+
     return wpi;
 }
-    //int computeWPI() TO BE IMPLEMENTED
     /* Create Bin Module */
     void createBin(){
         int n;
@@ -107,6 +113,7 @@ int computeWPI(float fill, int wasteType) {
             printf("Error Loading Database! \n");
             return ;
         }
+        fprintf(fp, "bin_id,zone,waste_type,capacity,fill_level,x,y,wpi,collected_today\n");
         for (int i = 0; i < n; i++) {
             // Zone
             printf("\nEnter the Details for Bin %d", i+1);
@@ -152,7 +159,7 @@ int computeWPI(float fill, int wasteType) {
 
             //Generate Bin ID
             int id = generateBinID(bins[i].waste_type,bins[i].zone);
-            if (bins[i].bin_id < 0) {
+            if (id < 0) {
                 i--;
                 continue;
             }
@@ -160,10 +167,25 @@ int computeWPI(float fill, int wasteType) {
             bins[i].bin_id  = id;
             bins[i].collected_today = false;
             //To Compute the WPI
-            bins[i].wpi = computeWPI(bins[i].fill_level, bins[i].waste_type);//to be implemented
-
+            bins[i].wpi = computeWPI(bins[i].fill_level, bins[i].waste_type);
+            fprintf(fp, "%d,%d,%d,%.2f,%.2f,%d,%d,%.2f,%d\n",
+        bins[i].bin_id,
+        bins[i].zone,
+        bins[i].waste_type,
+        bins[i].capacity,
+        bins[i].fill_level,
+        bins[i].x,
+        bins[i].y,
+        bins[i].wpi,
+        bins[i].collected_today);
+            fclose(fp);
+            printf("\nData have been Created Successfully !");
 
 
 
         }
     }
+
+int main() {
+    return 0;
+}
