@@ -640,7 +640,7 @@ void createDriver() {
         scanf("%[^\n]s", &drivers[i].phone);
         printf("\nEnter the Driver %d's Assigned Vehicle ID : ");
         scanf("%d", &drivers[i].assigned_vehicle_id);
-        printf("")
+        printf("");
 // continue from here
 
     }
