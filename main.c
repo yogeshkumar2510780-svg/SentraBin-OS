@@ -144,7 +144,8 @@ long long int generateBinID(int waste_type, int zone) {
     long long int id;
     int z, collected, x, y;
     char wasteTypeStr[20];
-    float fill, cap, wpi;
+    float capacity, fill, wpi;
+
     int maxSerial = 0;
 
     if (fp == NULL) {
@@ -154,28 +155,34 @@ long long int generateBinID(int waste_type, int zone) {
     char line[256];
     fgets(line, sizeof(line), fp); // skip header
 
-    while (fscanf(fp, "%lld,%d,%[^,],%f,%f,%d,%d,%f,%d",
+    while (fscanf(fp, "%lld,%d,%[^,],%f,%f,%d,%d,%f,%d\n",
                   &id, &z, wasteTypeStr,
-                  &cap, &fill,
+                  &capacity, &fill,
                   &x, &y,
                   &wpi, &collected) == 9) {
-        int currentWasteType = (int)(id / 100000);
-        int currentZone      = (int)((id / 1000) % 100);
+
+        int currentWasteType = id / 100000;
+        int currentZone      = (id / 1000) % 100;
+
         if (currentZone == zone && currentWasteType == waste_type) {
-            int serial = (int)(id % 1000);
-            if (serial > maxSerial) maxSerial = serial;
+            int serial = id % 1000;
+            if (serial > maxSerial) {
+                maxSerial = serial;
+            }
         }
     }
+
     fclose(fp);
 
     int newSerial = maxSerial + 1;
+
     if (newSerial > 999) {
         printf("Max bins reached for this zone!\n");
         return -1;
     }
+
     return (long long)waste_type * 100000 + (long long)zone * 1000 + newSerial;
 }
-
 // ══════════════════════════════════════════════════════════════════════════════
 //  MODULE 1 : createBin()
 // ══════════════════════════════════════════════════════════════════════════════
